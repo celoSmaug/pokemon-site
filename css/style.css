@@ -649,4 +649,125 @@ body {
         padding: 0.8rem 1rem;
         font-size: 0.9rem;
     }
+}
+
+.mega-evolutions {
+    grid-column: 1 / -1;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #e0e0e0;
+}
+
+.mega-evolutions h3 {
+    text-align: center;
+    color: #ff4500;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.mega-evolutions .mega-image {
+    display: inline-block;
+    width: calc(33.333% - 20px);
+    margin: 10px;
+    vertical-align: top;
+}
+
+.mega-evolutions .image-container {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    border: 2px solid #ff4500;
+    border-radius: 12px;
+    padding: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mega-evolutions .image-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(255, 69, 0, 0.2);
+}
+
+.mega-evolutions .image-container h4 {
+    color: #ff4500;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.mega-evolutions .image-container img {
+    width: 100%;
+    height: auto;
+    max-height: 200px;
+    object-fit: contain;
+    margin-bottom: 10px;
+}
+
+.mega-evolutions .mega-types {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+@media (max-width: 768px) {
+    .mega-evolutions .mega-image {
+        width: calc(50% - 20px);
+    }
+}
+
+@media (max-width: 480px) {
+    .mega-evolutions .mega-image {
+        width: 100%;
+        margin: 10px 0;
+    }
+}
+
+.music-control {
+    position: relative;
+    margin-left: 1rem;
+}
+
+#music-toggle {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#music-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.1);
+}
+
+#music-toggle.playing {
+    color: var(--secondary-color);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@media (max-width: 768px) {
+    .music-control {
+        margin-left: 0.5rem;
+    }
+    
+    #music-toggle {
+        font-size: 1.2rem;
+        width: 35px;
+        height: 35px;
+    }
 } 

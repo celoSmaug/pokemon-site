@@ -2,48 +2,216 @@
 const POKEMON_API = 'https://pokeapi.co/api/v2';
 const POKEMON_LIMIT = 1025; // Total de Pokémon até a 9ª geração
 const MEGA_EVOLUTIONS = {
-    'venusaur': { mega: true, megaX: false, megaY: false },
-    'charizard': { mega: false, megaX: true, megaY: true },
-    'blastoise': { mega: true, megaX: false, megaY: false },
-    'beedrill': { mega: true, megaX: false, megaY: false },
-    'pidgeot': { mega: true, megaX: false, megaY: false },
-    'alakazam': { mega: true, megaX: false, megaY: false },
-    'slowbro': { mega: true, megaX: false, megaY: false },
-    'gengar': { mega: true, megaX: false, megaY: false },
-    'kangaskhan': { mega: true, megaX: false, megaY: false },
-    'pinsir': { mega: true, megaX: false, megaY: false },
-    'gyarados': { mega: true, megaX: false, megaY: false },
-    'aerodactyl': { mega: true, megaX: false, megaY: false },
-    'mewtwo': { mega: false, megaX: true, megaY: true },
-    'ampharos': { mega: true, megaX: false, megaY: false },
-    'scizor': { mega: true, megaX: false, megaY: false },
-    'heracross': { mega: true, megaX: false, megaY: false },
-    'houndoom': { mega: true, megaX: false, megaY: false },
-    'tyranitar': { mega: true, megaX: false, megaY: false },
-    'blaziken': { mega: true, megaX: false, megaY: false },
-    'gardevoir': { mega: true, megaX: false, megaY: false },
-    'mawile': { mega: true, megaX: false, megaY: false },
-    'aggron': { mega: true, megaX: false, megaY: false },
-    'medicham': { mega: true, megaX: false, megaY: false },
-    'manectric': { mega: true, megaX: false, megaY: false },
-    'sharpedo': { mega: true, megaX: false, megaY: false },
-    'camerupt': { mega: true, megaX: false, megaY: false },
-    'altaria': { mega: true, megaX: false, megaY: false },
-    'banette': { mega: true, megaX: false, megaY: false },
-    'absol': { mega: true, megaX: false, megaY: false },
-    'glalie': { mega: true, megaX: false, megaY: false },
-    'salamence': { mega: true, megaX: false, megaY: false },
-    'metagross': { mega: true, megaX: false, megaY: false },
-    'latias': { mega: true, megaX: false, megaY: false },
-    'latios': { mega: true, megaX: false, megaY: false },
-    'rayquaza': { mega: true, megaX: false, megaY: false },
-    'lopunny': { mega: true, megaX: false, megaY: false },
-    'garchomp': { mega: true, megaX: false, megaY: false },
-    'lucario': { mega: true, megaX: false, megaY: false },
-    'abomasnow': { mega: true, megaX: false, megaY: false },
-    'gallade': { mega: true, megaX: false, megaY: false },
-    'audino': { mega: true, megaX: false, megaY: false },
-    'diancie': { mega: true, megaX: false, megaY: false }
+    'venusaur': { 
+        mega: { name: 'Mega Venusaur', sprite: 'venusaur-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'charizard': { 
+        mega: null,
+        megaX: { name: 'Mega Charizard X', sprite: 'charizard-mega-x' },
+        megaY: { name: 'Mega Charizard Y', sprite: 'charizard-mega-y' }
+    },
+    'blastoise': { 
+        mega: { name: 'Mega Blastoise', sprite: 'blastoise-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'beedrill': { 
+        mega: { name: 'Mega Beedrill', sprite: 'beedrill-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'pidgeot': { 
+        mega: { name: 'Mega Pidgeot', sprite: 'pidgeot-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'alakazam': { 
+        mega: { name: 'Mega Alakazam', sprite: 'alakazam-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'slowbro': { 
+        mega: { name: 'Mega Slowbro', sprite: 'slowbro-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'gengar': { 
+        mega: { name: 'Mega Gengar', sprite: 'gengar-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'kangaskhan': { 
+        mega: { name: 'Mega Kangaskhan', sprite: 'kangaskhan-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'pinsir': { 
+        mega: { name: 'Mega Pinsir', sprite: 'pinsir-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'gyarados': { 
+        mega: { name: 'Mega Gyarados', sprite: 'gyarados-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'aerodactyl': { 
+        mega: { name: 'Mega Aerodactyl', sprite: 'aerodactyl-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'mewtwo': { 
+        mega: null,
+        megaX: { name: 'Mega Mewtwo X', sprite: 'mewtwo-mega-x' },
+        megaY: { name: 'Mega Mewtwo Y', sprite: 'mewtwo-mega-y' }
+    },
+    'ampharos': { 
+        mega: { name: 'Mega Ampharos', sprite: 'ampharos-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'scizor': { 
+        mega: { name: 'Mega Scizor', sprite: 'scizor-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'heracross': { 
+        mega: { name: 'Mega Heracross', sprite: 'heracross-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'houndoom': { 
+        mega: { name: 'Mega Houndoom', sprite: 'houndoom-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'tyranitar': { 
+        mega: { name: 'Mega Tyranitar', sprite: 'tyranitar-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'blaziken': { 
+        mega: { name: 'Mega Blaziken', sprite: 'blaziken-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'gardevoir': { 
+        mega: { name: 'Mega Gardevoir', sprite: 'gardevoir-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'mawile': { 
+        mega: { name: 'Mega Mawile', sprite: 'mawile-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'aggron': { 
+        mega: { name: 'Mega Aggron', sprite: 'aggron-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'medicham': { 
+        mega: { name: 'Mega Medicham', sprite: 'medicham-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'manectric': { 
+        mega: { name: 'Mega Manectric', sprite: 'manectric-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'sharpedo': { 
+        mega: { name: 'Mega Sharpedo', sprite: 'sharpedo-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'camerupt': { 
+        mega: { name: 'Mega Camerupt', sprite: 'camerupt-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'altaria': { 
+        mega: { name: 'Mega Altaria', sprite: 'altaria-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'banette': { 
+        mega: { name: 'Mega Banette', sprite: 'banette-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'absol': { 
+        mega: { name: 'Mega Absol', sprite: 'absol-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'glalie': { 
+        mega: { name: 'Mega Glalie', sprite: 'glalie-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'salamence': { 
+        mega: { name: 'Mega Salamence', sprite: 'salamence-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'metagross': { 
+        mega: { name: 'Mega Metagross', sprite: 'metagross-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'latias': { 
+        mega: { name: 'Mega Latias', sprite: 'latias-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'latios': { 
+        mega: { name: 'Mega Latios', sprite: 'latios-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'rayquaza': { 
+        mega: { name: 'Mega Rayquaza', sprite: 'rayquaza-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'lopunny': { 
+        mega: { name: 'Mega Lopunny', sprite: 'lopunny-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'garchomp': { 
+        mega: { name: 'Mega Garchomp', sprite: 'garchomp-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'lucario': { 
+        mega: { name: 'Mega Lucario', sprite: 'lucario-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'abomasnow': { 
+        mega: { name: 'Mega Abomasnow', sprite: 'abomasnow-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'gallade': { 
+        mega: { name: 'Mega Gallade', sprite: 'gallade-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'audino': { 
+        mega: { name: 'Mega Audino', sprite: 'audino-mega' },
+        megaX: null,
+        megaY: null
+    },
+    'diancie': { 
+        mega: { name: 'Mega Diancie', sprite: 'diancie-mega' },
+        megaX: null,
+        megaY: null
+    }
 };
 
 // Configurações da API
@@ -58,6 +226,8 @@ const modal = document.getElementById('pokemon-modal');
 const closeButton = document.querySelector('.close-button');
 const pokemonDetails = document.querySelector('.pokemon-details');
 const generationFilter = document.getElementById('generation-filter');
+const musicToggle = document.getElementById('music-toggle');
+const bgMusic = document.getElementById('bg-music');
 
 // Cores para os tipos de Pokémon
 const typeColors = {
@@ -139,6 +309,7 @@ async function showPokemonDetails(pokemon) {
     const pokemonOfficial = document.getElementById('pokemon-official');
     const pokemonShiny = document.getElementById('pokemon-shiny');
     const pokemonCard = document.getElementById('pokemon-card');
+    const pokemonImages = document.querySelector('.pokemon-images');
 
     // Mostrar modal
     modal.style.display = 'block';
@@ -227,34 +398,46 @@ async function showPokemonDetails(pokemon) {
         try {
             const megaForms = [];
             if (hasMega.mega) {
-                megaForms.push(`${pokemon.name}-mega`);
+                megaForms.push(hasMega.mega);
             }
             if (hasMega.megaX) {
-                megaForms.push(`${pokemon.name}-mega-x`);
+                megaForms.push(hasMega.megaX);
             }
             if (hasMega.megaY) {
-                megaForms.push(`${pokemon.name}-mega-y`);
+                megaForms.push(hasMega.megaY);
             }
 
+            // Criar container para mega evoluções
+            const megaContainer = document.createElement('div');
+            megaContainer.className = 'mega-evolutions';
+            megaContainer.innerHTML = '<h3>Mega Evolutions</h3>';
+
             for (const form of megaForms) {
-                const megaResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${form}`);
+                const megaResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${form.sprite}`);
                 if (megaResponse.ok) {
                     const megaData = await megaResponse.json();
-                    const megaImages = document.createElement('div');
-                    megaImages.className = 'mega-images';
+                    const megaImage = document.createElement('div');
+                    megaImage.className = 'mega-image';
                     
-                    const formName = form.split('-').pop().toUpperCase();
-                    megaImages.innerHTML = `
+                    megaImage.innerHTML = `
                         <div class="image-container">
-                            <h3>Mega Evolution ${formName}</h3>
+                            <h4>${form.name}</h4>
                             <img src="${megaData.sprites.other['official-artwork'].front_default}" 
-                                 alt="Mega ${pokemon.name} ${formName}" 
-                                 title="Mega ${pokemon.name} ${formName}">
+                                 alt="${form.name}" 
+                                 title="${form.name}">
+                            <div class="mega-types">
+                                ${megaData.types.map(type => `
+                                    <span class="type-badge ${type.type.name}">${type.type.name}</span>
+                                `).join('')}
+                            </div>
                         </div>
                     `;
-                    document.querySelector('.pokemon-images').appendChild(megaImages);
+                    megaContainer.appendChild(megaImage);
                 }
             }
+
+            // Adicionar o container de mega evoluções ao modal
+            pokemonImages.appendChild(megaContainer);
         } catch (error) {
             console.error('Erro ao buscar mega evolução:', error);
         }
@@ -403,6 +586,17 @@ closeButton.addEventListener('click', () => {
 window.addEventListener('click', (e) => {
     if (e.target === modal) {
         modal.style.display = 'none';
+    }
+});
+
+// Controle de música
+musicToggle.addEventListener('click', () => {
+    if (bgMusic.paused) {
+        bgMusic.play();
+        musicToggle.classList.add('playing');
+    } else {
+        bgMusic.pause();
+        musicToggle.classList.remove('playing');
     }
 });
 

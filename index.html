@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex - O Mundo dos Pokémon</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <img src="images/pokeball.svg" alt="Pokébola" width="40" height="40">
+                <h1>Pokédex</h1>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Buscar Pokémon...">
+                <button id="search-button"><i class="fas fa-search"></i></button>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <div class="pokemon-container" id="pokemon-container">
+            <!-- Os Pokémon serão carregados aqui via JavaScript -->
+        </div>
+    </main>
+
+    <div class="modal" id="pokemon-modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div class="pokemon-details">
+                <!-- Os detalhes do Pokémon serão carregados aqui -->
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Pokédex - Todos os direitos reservados</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html> 

@@ -302,6 +302,9 @@ function setupEventListeners() {
     // Voltar ao topo
     window.addEventListener('scroll', handleScroll);
     backToTopButton.addEventListener('click', scrollToTop);
+
+    // Adiciona event listener para o filtro de mega evoluções
+    document.getElementById('mega-filter').addEventListener('change', applyFilters);
 }
 
 // Função para carregar o tema salvo
@@ -338,30 +341,25 @@ async function handleSearch() {
 
 // Função para aplicar filtros
 function applyFilters() {
-    const generation = generationFilter.value;
-    const type = typeFilter.value;
-    
-    filteredPokemons = allPokemons.filter(pokemon => {
-        const matchesGeneration = generation === 'all' || 
-            (generation === '1' && pokemon.id <= 151) ||
-            (generation === '2' && pokemon.id > 151 && pokemon.id <= 251) ||
-            (generation === '3' && pokemon.id > 251 && pokemon.id <= 386) ||
-            (generation === '4' && pokemon.id > 386 && pokemon.id <= 493) ||
-            (generation === '5' && pokemon.id > 493 && pokemon.id <= 649) ||
-            (generation === '6' && pokemon.id > 649 && pokemon.id <= 721) ||
-            (generation === '7' && pokemon.id > 721 && pokemon.id <= 809) ||
-            (generation === '8' && pokemon.id > 809 && pokemon.id <= 905) ||
-            (generation === '9' && pokemon.id > 905);
-            
-        const matchesType = type === 'all' || 
-            pokemon.types.some(t => t.type.name === type);
-            
-        return matchesGeneration && matchesType;
+    const generationFilter = document.getElementById('generation-filter').value;
+    const megaFilter = document.getElementById('mega-filter').value;
+    const searchTerm = document.getElementById('search-input').value.toLowerCase();
+
+    const filteredPokemons = allPokemons.filter(pokemon => {
+        const matchesGeneration = generationFilter === 'all' || getPokemonGeneration(pokemon.id) === parseInt(generationFilter);
+        const matchesSearch = pokemon.name.toLowerCase().includes(searchTerm);
+        const hasMega = hasMegaEvolution(pokemon.name);
+
+        if (megaFilter === 'mega') {
+            return matchesGeneration && matchesSearch && hasMega;
+        } else if (megaFilter === 'normal') {
+            return matchesGeneration && matchesSearch && !hasMega;
+        }
+        return matchesGeneration && matchesSearch;
     });
-    
-    currentPage = 1;
-    updatePagination();
-    displayPokemons();
+
+    displayPokemons(filteredPokemons);
+    updatePokemonCount(filteredPokemons.length);
 }
 
 // Função para alternar entre visualização em grid e lista
@@ -498,55 +496,88 @@ function changePage(newPage) {
 
 // Função para mostrar detalhes do Pokémon
 async function showPokemonDetails(id) {
-    const pokemon = allPokemons.find(p => p.id === parseInt(id));
-    if (!pokemon) return;
+    const pokemon = await fetchPokemonData(id);
+    const megaInfo = getMegaEvolutionInfo(pokemon.name);
     
-    const modal = document.getElementById('pokemon-modal');
-    const modalContent = modal.querySelector('.modal-content');
-    
-    modalContent.innerHTML = `
-        <span class="close">&times;</span>
-        <div class="pokemon-details">
-            <img src="${pokemon.image}" alt="${pokemon.name}">
-            <h2>${pokemon.name}</h2>
-            <div class="types">
-                ${pokemon.types.map(type => `
-                    <span class="type ${type.type.name}">${type.type.name}</span>
-                `).join('')}
+    const types = pokemon.types.map(type => `<span class="type ${type.type.name}">${type.type.name}</span>`).join('');
+    const abilities = pokemon.abilities.map(ability => ability.ability.name).join(', ');
+    const stats = pokemon.stats.map(stat => `
+        <div class="stat">
+            <span class="stat-name">${stat.stat.name}</span>
+            <div class="stat-bar">
+                <div class="stat-fill" style="width: ${(stat.base_stat / 255) * 100}%"></div>
             </div>
-            <div class="stats">
-                <h3>Estatísticas</h3>
-                ${pokemon.stats.map(stat => `
-                    <div class="stat">
-                        <span class="stat-name">${stat.stat.name}</span>
-                        <div class="stat-bar">
-                            <div class="stat-value" style="width: ${stat.base_stat}%"></div>
-                        </div>
-                        <span class="stat-value-text">${stat.base_stat}</span>
-                    </div>
-                `).join('')}
+            <span class="stat-value">${stat.base_stat}</span>
+        </div>
+    `).join('');
+
+    let megaEvolutionsHtml = '';
+    if (megaInfo) {
+        megaEvolutionsHtml = '<div class="mega-evolutions">';
+        if (megaInfo.mega) {
+            megaEvolutionsHtml += `
+                <div class="mega-form">
+                    <h4>${megaInfo.mega.name}</h4>
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}-mega.png" 
+                         alt="${megaInfo.mega.name}"
+                         class="mega-image">
+                </div>
+            `;
+        }
+        if (megaInfo.megaX) {
+            megaEvolutionsHtml += `
+                <div class="mega-form">
+                    <h4>${megaInfo.megaX.name}</h4>
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}-mega-x.png" 
+                         alt="${megaInfo.megaX.name}"
+                         class="mega-image">
+                </div>
+            `;
+        }
+        if (megaInfo.megaY) {
+            megaEvolutionsHtml += `
+                <div class="mega-form">
+                    <h4>${megaInfo.megaY.name}</h4>
+                    <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${pokemon.id}-mega-y.png" 
+                         alt="${megaInfo.megaY.name}"
+                         class="mega-image">
+                </div>
+            `;
+        }
+        megaEvolutionsHtml += '</div>';
+    }
+
+    const modalContent = `
+        <div class="modal-header">
+            <h2>${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h2>
+            <span class="pokemon-number">#${String(pokemon.id).padStart(3, '0')}</span>
+        </div>
+        <div class="modal-body">
+            <div class="pokemon-detail-image">
+                <img src="${pokemon.sprites.other['official-artwork'].front_default}" 
+                     alt="${pokemon.name}">
             </div>
-            <div class="info">
-                <p><strong>Altura:</strong> ${pokemon.height / 10}m</p>
-                <p><strong>Peso:</strong> ${pokemon.weight / 10}kg</p>
-                <p><strong>Habilidades:</strong> ${pokemon.abilities.map(a => a.ability.name).join(', ')}</p>
+            <div class="pokemon-info">
+                <div class="pokemon-types">
+                    ${types}
+                </div>
+                <div class="pokemon-abilities">
+                    <h3>Abilities</h3>
+                    <p>${abilities}</p>
+                </div>
+                <div class="pokemon-stats">
+                    <h3>Base Stats</h3>
+                    ${stats}
+                </div>
+                ${megaEvolutionsHtml}
             </div>
         </div>
     `;
-    
-    modal.style.display = 'flex';
-    
-    // Adiciona event listener para fechar o modal
-    modal.querySelector('.close').addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    
-    // Fecha o modal ao clicar fora
-    window.addEventListener('click', (event) => {
-        if (event.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
+
+    const modal = document.getElementById('pokemon-modal');
+    const modalContentElement = modal.querySelector('.modal-content');
+    modalContentElement.innerHTML = modalContent;
+    modal.classList.add('active');
 }
 
 // Função para buscar detalhes de um Pokémon específico
@@ -562,28 +593,25 @@ async function fetchPokemonDetails(url) {
 
 // Função para criar o card de um Pokémon
 function createPokemonCard(pokemon) {
-    const card = document.createElement('div');
-    card.className = 'pokemon-card';
+    const hasMega = hasMegaEvolution(pokemon.name);
+    const types = pokemon.types.map(type => `<span class="type ${type.type.name}">${type.type.name}</span>`).join('');
     
-    // Verifica se é uma mega evolução
-    const isMega = MEGA_EVOLUTIONS[pokemon.name];
-    const megaBadge = isMega ? '<span class="mega-badge">MEGA</span>' : '';
-    
-    card.innerHTML = `
-        ${megaBadge}
-        <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
-        <h2>${pokemon.name}</h2>
-        <div class="pokemon-types">
-            ${pokemon.types.map(type => `
-                <span class="type-badge" style="background-color: ${typeColors[type.type.name]}">
-                    ${type.type.name}
-                </span>
-            `).join('')}
+    return `
+        <div class="pokemon-card" data-id="${pokemon.id}">
+            <div class="card-header">
+                <span class="pokemon-number">#${String(pokemon.id).padStart(3, '0')}</span>
+                ${hasMega ? '<span class="mega-available" title="Mega Evolution Available">M</span>' : ''}
+            </div>
+            <img src="${pokemon.sprites.other['official-artwork'].front_default}" 
+                 alt="${pokemon.name}" 
+                 class="pokemon-image"
+                 loading="lazy">
+            <h3 class="pokemon-name">${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h3>
+            <div class="pokemon-types">
+                ${types}
+            </div>
         </div>
     `;
-
-    card.addEventListener('click', () => showPokemonDetails(pokemon));
-    return card;
 }
 
 // Função para inicializar a Pokédex
@@ -742,6 +770,28 @@ musicToggle.addEventListener('click', () => {
     }
 });
 
+// Adiciona função para verificar se um Pokémon tem mega evolução
+function hasMegaEvolution(pokemonName) {
+    return MEGA_EVOLUTIONS[pokemonName.toLowerCase()] !== undefined;
+}
+
+// Função para obter informações da mega evolução
+function getMegaEvolutionInfo(pokemonName) {
+    return MEGA_EVOLUTIONS[pokemonName.toLowerCase()] || null;
+}
+
+// Função para determinar a geração de um Pokémon pelo seu ID
+function getPokemonGeneration(id) {
+    if (id <= 151) return 1;
+    if (id <= 251) return 2;
+    if (id <= 386) return 3;
+    if (id <= 493) return 4;
+    if (id <= 649) return 5;
+    if (id <= 721) return 6;
+    if (id <= 809) return 7;
+    if (id <= 905) return 8;
+    return 9;
+}
+
 // Inicializar a Pokédex
-initPokedex(); 
 initPokedex(); 

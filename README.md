@@ -4,7 +4,7 @@ Uma Pokédex web interativa que exibe informações sobre os 151 primeiros Poké
 
 ## Funcionalidades
 
-- Lista completa dos 151 primeiros Pokémon
+- Lista completa dos 905 Pokémon
 - Busca por nome
 - Detalhes completos de cada Pokémon
 - Design responsivo

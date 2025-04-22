@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pokédex - O Mundo dos Pokémon</title>
+    <title>Pokédex Completa - Todas as Gerações</title>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -12,13 +12,27 @@
         <nav class="navbar">
             <div class="logo">
                 <img src="images/pokeball.svg" alt="Pokébola" width="40" height="40">
-                <h1>Pokédex</h1>
+                <h1>Pokédex Completa</h1>
             </div>
             <div class="search-container">
                 <input type="text" id="search-input" placeholder="Buscar Pokémon...">
                 <button id="search-button"><i class="fas fa-search"></i></button>
             </div>
         </nav>
+        <div class="filters">
+            <select id="generation-filter">
+                <option value="all">Todas as Gerações</option>
+                <option value="1">1ª Geração (1-151)</option>
+                <option value="2">2ª Geração (152-251)</option>
+                <option value="3">3ª Geração (252-386)</option>
+                <option value="4">4ª Geração (387-493)</option>
+                <option value="5">5ª Geração (494-649)</option>
+                <option value="6">6ª Geração (650-721)</option>
+                <option value="7">7ª Geração (722-809)</option>
+                <option value="8">8ª Geração (810-905)</option>
+                <option value="9">9ª Geração (906-1025)</option>
+            </select>
+        </div>
     </header>
 
     <main>

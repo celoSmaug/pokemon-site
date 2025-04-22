@@ -1,6 +1,20 @@
 // Configurações
 const POKEMON_API = 'https://pokeapi.co/api/v2';
-const POKEMON_LIMIT = 151; // Primeira geração de Pokémon
+const POKEMON_LIMIT = 1025; // Total de Pokémon até a 9ª geração
+const MEGA_EVOLUTIONS = [
+    'mega-venusaur', 'mega-charizard-x', 'mega-charizard-y', 'mega-blastoise',
+    'mega-beedrill', 'mega-pidgeot', 'mega-alakazam', 'mega-slowbro',
+    'mega-gengar', 'mega-kangaskhan', 'mega-pinsir', 'mega-gyarados',
+    'mega-aerodactyl', 'mega-mewtwo-x', 'mega-mewtwo-y', 'mega-ampharos',
+    'mega-scizor', 'mega-heracross', 'mega-houndoom', 'mega-tyranitar',
+    'mega-blaziken', 'mega-sceptile', 'mega-swampert', 'mega-gardevoir',
+    'mega-sableye', 'mega-mawile', 'mega-aggressor', 'mega-medicham',
+    'mega-manectric', 'mega-sharpedo', 'mega-camerupt', 'mega-altaria',
+    'mega-banette', 'mega-absol', 'mega-glalie', 'mega-salamence',
+    'mega-metagross', 'mega-latias', 'mega-latios', 'mega-rayquaza',
+    'mega-lopunny', 'mega-garchomp', 'mega-lucario', 'mega-abomasnow',
+    'mega-gallade', 'mega-audino', 'mega-diancie'
+];
 
 // Elementos do DOM
 const pokemonContainer = document.getElementById('pokemon-container');
@@ -9,6 +23,7 @@ const searchButton = document.getElementById('search-button');
 const modal = document.getElementById('pokemon-modal');
 const closeButton = document.querySelector('.close-button');
 const pokemonDetails = document.querySelector('.pokemon-details');
+const generationFilter = document.getElementById('generation-filter');
 
 // Cores para os tipos de Pokémon
 const typeColors = {
@@ -59,7 +74,13 @@ async function fetchPokemonDetails(url) {
 function createPokemonCard(pokemon) {
     const card = document.createElement('div');
     card.className = 'pokemon-card';
+    
+    // Verifica se é uma mega evolução
+    const isMega = MEGA_EVOLUTIONS.includes(pokemon.name);
+    const megaBadge = isMega ? '<span class="mega-badge">MEGA</span>' : '';
+    
     card.innerHTML = `
+        ${megaBadge}
         <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         <h2>${pokemon.name}</h2>
         <div class="pokemon-types">
@@ -86,7 +107,12 @@ function showPokemonDetails(pokemon) {
         </div>
     `).join('');
 
+    // Verifica se é uma mega evolução
+    const isMega = MEGA_EVOLUTIONS.includes(pokemon.name);
+    const megaBadge = isMega ? '<span class="mega-badge">MEGA EVOLUTION</span>' : '';
+
     pokemonDetails.innerHTML = `
+        ${megaBadge}
         <img src="${pokemon.sprites.front_default}" alt="${pokemon.name}">
         <h2>${pokemon.name}</h2>
         <div class="pokemon-types">

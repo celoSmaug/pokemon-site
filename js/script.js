@@ -220,14 +220,23 @@ const POKEMON_TCG_API_URL = 'https://api.pokemontcg.io/v2';
 
 // Elementos do DOM
 const pokemonContainer = document.getElementById('pokemon-container');
+const loadingElement = document.getElementById('loading');
 const searchInput = document.getElementById('search-input');
 const searchButton = document.getElementById('search-button');
 const modal = document.getElementById('pokemon-modal');
 const closeButton = document.querySelector('.close-button');
 const pokemonDetails = document.querySelector('.pokemon-details');
 const generationFilter = document.getElementById('generation-filter');
+const typeFilter = document.getElementById('type-filter');
+const prevPageButton = document.getElementById('prev-page');
+const nextPageButton = document.getElementById('next-page');
+const pageInfo = document.getElementById('page-info');
 const musicToggle = document.getElementById('music-toggle');
 const bgMusic = document.getElementById('bg-music');
+const themeToggle = document.querySelector('.theme-toggle');
+const backToTopButton = document.querySelector('.back-to-top');
+const gridViewButton = document.getElementById('grid-view');
+const listViewButton = document.getElementById('list-view');
 
 // Cores para os tipos de Pokémon
 const typeColors = {
@@ -251,16 +260,293 @@ const typeColors = {
     fairy: '#EE99AC'
 };
 
-// Função para buscar Pokémon da API
-async function fetchPokemon() {
+// Configurações adicionais
+const POKEMONS_PER_PAGE = 20;
+let currentPage = 1;
+let allPokemons = [];
+let filteredPokemons = [];
+let currentView = 'grid';
+let currentTheme = 'light';
+
+// Cache para armazenar dados dos Pokémon
+const pokemonCache = new Map();
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', () => {
+    loadTheme();
+    setupEventListeners();
+    fetchPokemons();
+});
+
+// Configuração dos event listeners
+function setupEventListeners() {
+    // Tema
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Busca
+    searchInput.addEventListener('input', debounce(handleSearch, 300));
+    searchButton.addEventListener('click', handleSearch);
+    
+    // Filtros
+    generationFilter.addEventListener('change', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    
+    // Paginação
+    prevPageButton.addEventListener('click', () => changePage(currentPage - 1));
+    nextPageButton.addEventListener('click', () => changePage(currentPage + 1));
+    
+    // Visualização
+    gridViewButton.addEventListener('click', () => switchView('grid'));
+    listViewButton.addEventListener('click', () => switchView('list'));
+    
+    // Voltar ao topo
+    window.addEventListener('scroll', handleScroll);
+    backToTopButton.addEventListener('click', scrollToTop);
+}
+
+// Função para carregar o tema salvo
+function loadTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+        currentTheme = savedTheme;
+        document.body.setAttribute('data-theme', currentTheme);
+    }
+}
+
+// Função para alternar o tema
+function toggleTheme() {
+    currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+    document.body.setAttribute('data-theme', currentTheme);
+    localStorage.setItem('theme', currentTheme);
+}
+
+// Função para buscar Pokémon
+async function handleSearch() {
+    const searchTerm = searchInput.value.toLowerCase();
+    if (searchTerm.length < 2) {
+        applyFilters();
+        return;
+    }
+    
+    filteredPokemons = allPokemons.filter(pokemon => 
+        pokemon.name.toLowerCase().includes(searchTerm)
+    );
+    currentPage = 1;
+    updatePagination();
+    displayPokemons();
+}
+
+// Função para aplicar filtros
+function applyFilters() {
+    const generation = generationFilter.value;
+    const type = typeFilter.value;
+    
+    filteredPokemons = allPokemons.filter(pokemon => {
+        const matchesGeneration = generation === 'all' || 
+            (generation === '1' && pokemon.id <= 151) ||
+            (generation === '2' && pokemon.id > 151 && pokemon.id <= 251) ||
+            (generation === '3' && pokemon.id > 251 && pokemon.id <= 386) ||
+            (generation === '4' && pokemon.id > 386 && pokemon.id <= 493) ||
+            (generation === '5' && pokemon.id > 493 && pokemon.id <= 649) ||
+            (generation === '6' && pokemon.id > 649 && pokemon.id <= 721) ||
+            (generation === '7' && pokemon.id > 721 && pokemon.id <= 809) ||
+            (generation === '8' && pokemon.id > 809 && pokemon.id <= 905) ||
+            (generation === '9' && pokemon.id > 905);
+            
+        const matchesType = type === 'all' || 
+            pokemon.types.some(t => t.type.name === type);
+            
+        return matchesGeneration && matchesType;
+    });
+    
+    currentPage = 1;
+    updatePagination();
+    displayPokemons();
+}
+
+// Função para alternar entre visualização em grid e lista
+function switchView(view) {
+    currentView = view;
+    pokemonContainer.className = `${view}-view`;
+    gridViewButton.classList.toggle('active', view === 'grid');
+    listViewButton.classList.toggle('active', view === 'list');
+    displayPokemons();
+}
+
+// Função para lidar com o scroll
+function handleScroll() {
+    const scrollTop = window.pageYOffset;
+    backToTopButton.classList.toggle('visible', scrollTop > 300);
+}
+
+// Função para rolar até o topo
+function scrollToTop() {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+}
+
+// Função para debounce
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+// Função para buscar todos os Pokémon
+async function fetchPokemons() {
     try {
-        const response = await fetch(`${POKEMON_API}/pokemon?limit=${POKEMON_LIMIT}`);
+        loadingElement.style.display = 'flex';
+        const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=1025');
         const data = await response.json();
-        return data.results;
+        allPokemons = await Promise.all(
+            data.results.map(async (pokemon, index) => {
+                const pokemonData = await fetchPokemonData(index + 1);
+                return {
+                    id: index + 1,
+                    name: pokemon.name,
+                    ...pokemonData
+                };
+            })
+        );
+        filteredPokemons = [...allPokemons];
+        updatePagination();
+        displayPokemons();
     } catch (error) {
         console.error('Erro ao buscar Pokémon:', error);
-        return [];
+    } finally {
+        loadingElement.style.display = 'none';
     }
+}
+
+// Função para buscar dados de um Pokémon específico
+async function fetchPokemonData(id) {
+    if (pokemonCache.has(id)) {
+        return pokemonCache.get(id);
+    }
+    
+    try {
+        const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${id}`);
+        const data = await response.json();
+        const pokemonData = {
+            image: data.sprites.other['official-artwork'].front_default,
+            types: data.types,
+            height: data.height,
+            weight: data.weight,
+            stats: data.stats,
+            abilities: data.abilities
+        };
+        pokemonCache.set(id, pokemonData);
+        return pokemonData;
+    } catch (error) {
+        console.error(`Erro ao buscar dados do Pokémon ${id}:`, error);
+        return null;
+    }
+}
+
+// Função para exibir os Pokémon
+function displayPokemons() {
+    const start = (currentPage - 1) * POKEMONS_PER_PAGE;
+    const end = start + POKEMONS_PER_PAGE;
+    const pokemonsToShow = filteredPokemons.slice(start, end);
+    
+    pokemonContainer.innerHTML = pokemonsToShow.map(pokemon => `
+        <div class="pokemon-card tooltip" data-id="${pokemon.id}">
+            <img src="${pokemon.image}" alt="${pokemon.name}" loading="lazy">
+            <h3>${pokemon.name}</h3>
+            <div class="types">
+                ${pokemon.types.map(type => `
+                    <span class="type ${type.type.name}">${type.type.name}</span>
+                `).join('')}
+            </div>
+            <div class="tooltip-text">
+                <p>Altura: ${pokemon.height / 10}m</p>
+                <p>Peso: ${pokemon.weight / 10}kg</p>
+                <p>Habilidades: ${pokemon.abilities.map(a => a.ability.name).join(', ')}</p>
+            </div>
+        </div>
+    `).join('');
+    
+    // Adiciona event listeners para os cards
+    document.querySelectorAll('.pokemon-card').forEach(card => {
+        card.addEventListener('click', () => showPokemonDetails(card.dataset.id));
+    });
+}
+
+// Função para atualizar a paginação
+function updatePagination() {
+    const totalPages = Math.ceil(filteredPokemons.length / POKEMONS_PER_PAGE);
+    prevPageButton.disabled = currentPage === 1;
+    nextPageButton.disabled = currentPage === totalPages;
+    pageInfo.textContent = `Página ${currentPage} de ${totalPages}`;
+}
+
+// Função para mudar de página
+function changePage(newPage) {
+    currentPage = newPage;
+    updatePagination();
+    displayPokemons();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Função para mostrar detalhes do Pokémon
+async function showPokemonDetails(id) {
+    const pokemon = allPokemons.find(p => p.id === parseInt(id));
+    if (!pokemon) return;
+    
+    const modal = document.getElementById('pokemon-modal');
+    const modalContent = modal.querySelector('.modal-content');
+    
+    modalContent.innerHTML = `
+        <span class="close">&times;</span>
+        <div class="pokemon-details">
+            <img src="${pokemon.image}" alt="${pokemon.name}">
+            <h2>${pokemon.name}</h2>
+            <div class="types">
+                ${pokemon.types.map(type => `
+                    <span class="type ${type.type.name}">${type.type.name}</span>
+                `).join('')}
+            </div>
+            <div class="stats">
+                <h3>Estatísticas</h3>
+                ${pokemon.stats.map(stat => `
+                    <div class="stat">
+                        <span class="stat-name">${stat.stat.name}</span>
+                        <div class="stat-bar">
+                            <div class="stat-value" style="width: ${stat.base_stat}%"></div>
+                        </div>
+                        <span class="stat-value-text">${stat.base_stat}</span>
+                    </div>
+                `).join('')}
+            </div>
+            <div class="info">
+                <p><strong>Altura:</strong> ${pokemon.height / 10}m</p>
+                <p><strong>Peso:</strong> ${pokemon.weight / 10}kg</p>
+                <p><strong>Habilidades:</strong> ${pokemon.abilities.map(a => a.ability.name).join(', ')}</p>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'flex';
+    
+    // Adiciona event listener para fechar o modal
+    modal.querySelector('.close').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    
+    // Fecha o modal ao clicar fora
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
 }
 
 // Função para buscar detalhes de um Pokémon específico
@@ -298,150 +584,6 @@ function createPokemonCard(pokemon) {
 
     card.addEventListener('click', () => showPokemonDetails(pokemon));
     return card;
-}
-
-// Função para mostrar os detalhes de um Pokémon
-async function showPokemonDetails(pokemon) {
-    const modal = document.getElementById('pokemon-modal');
-    const pokemonName = document.getElementById('pokemon-name');
-    const pokemonTypes = document.getElementById('pokemon-types');
-    const pokemonStats = document.getElementById('pokemon-stats');
-    const pokemonOfficial = document.getElementById('pokemon-official');
-    const pokemonShiny = document.getElementById('pokemon-shiny');
-    const pokemonCard = document.getElementById('pokemon-card');
-    const pokemonImages = document.querySelector('.pokemon-images');
-
-    // Mostrar modal
-    modal.style.display = 'block';
-
-    // Verificar se o Pokémon tem mega evolução
-    const hasMega = MEGA_EVOLUTIONS[pokemon.name];
-    const megaBadge = hasMega ? '<span class="mega-badge">MEGA EVOLUTION</span>' : '';
-
-    // Nome do Pokémon com badge de mega evolução
-    pokemonName.innerHTML = `${pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)} ${megaBadge}`;
-
-    // Tipos do Pokémon
-    pokemonTypes.innerHTML = pokemon.types.map(type => 
-        `<span class="type-badge ${type.type.name}">${type.type.name}</span>`
-    ).join('');
-
-    // Estatísticas do Pokémon
-    pokemonStats.innerHTML = pokemon.stats.map(stat => `
-        <div class="stat">
-            <span class="stat-name">${stat.stat.name}:</span>
-            <div class="stat-bar">
-                <div class="stat-fill" style="width: ${(stat.base_stat / 255) * 100}%"></div>
-            </div>
-            <span class="stat-value">${stat.base_stat}</span>
-        </div>
-    `).join('');
-
-    // Imagem oficial (usando a imagem de alta qualidade)
-    pokemonOfficial.src = pokemon.sprites.other['official-artwork'].front_default || pokemon.sprites.front_default;
-    pokemonOfficial.alt = `Imagem oficial de ${pokemon.name}`;
-    pokemonOfficial.title = `Imagem oficial de ${pokemon.name}`;
-
-    // Imagem shiny
-    pokemonShiny.src = pokemon.sprites.other['official-artwork'].front_shiny || pokemon.sprites.front_shiny;
-    pokemonShiny.alt = `Versão shiny de ${pokemon.name}`;
-    pokemonShiny.title = `Versão shiny de ${pokemon.name}`;
-
-    // Mostrar indicador de carregamento para a carta
-    pokemonCard.src = 'images/loading.svg';
-    pokemonCard.alt = 'Carregando carta...';
-    pokemonCard.title = 'Buscando carta mais rara...';
-
-    // Buscar carta TCG
-    try {
-        const response = await fetch(`${POKEMON_TCG_API_URL}/cards?q=name:${pokemon.name}&orderBy=-rarity`, {
-            headers: {
-                'X-Api-Key': POKEMON_TCG_API_KEY
-            }
-        });
-        
-        if (!response.ok) {
-            throw new Error(`Erro na API: ${response.status}`);
-        }
-
-        const data = await response.json();
-        
-        if (data.data && data.data.length > 0) {
-            // Pegar a primeira carta (mais rara)
-            const card = data.data[0];
-            pokemonCard.src = card.images.large;
-            pokemonCard.alt = `Carta TCG de ${pokemon.name} - ${card.rarity}`;
-            
-            // Adicionar tooltip com informações detalhadas da carta
-            const cardInfo = [
-                `Raridade: ${card.rarity}`,
-                `Série: ${card.set.name}`,
-                `Número: ${card.number}/${card.set.printedTotal}`,
-                card.marketPrices?.latest ? `Preço: $${card.marketPrices.latest}` : ''
-            ].filter(Boolean).join('\n');
-            
-            pokemonCard.title = cardInfo;
-        } else {
-            pokemonCard.src = 'images/no-card.svg';
-            pokemonCard.alt = 'Carta não disponível';
-            pokemonCard.title = 'Nenhuma carta encontrada para este Pokémon.';
-        }
-    } catch (error) {
-        console.error('Erro ao buscar carta TCG:', error);
-        pokemonCard.src = 'images/no-card.svg';
-        pokemonCard.alt = 'Erro ao carregar carta';
-        pokemonCard.title = 'Erro ao carregar carta. Tente novamente mais tarde.';
-    }
-
-    // Buscar imagens da mega evolução se disponível
-    if (hasMega) {
-        try {
-            const megaForms = [];
-            if (hasMega.mega) {
-                megaForms.push(hasMega.mega);
-            }
-            if (hasMega.megaX) {
-                megaForms.push(hasMega.megaX);
-            }
-            if (hasMega.megaY) {
-                megaForms.push(hasMega.megaY);
-            }
-
-            // Criar container para mega evoluções
-            const megaContainer = document.createElement('div');
-            megaContainer.className = 'mega-evolutions';
-            megaContainer.innerHTML = '<h3>Mega Evolutions</h3>';
-
-            for (const form of megaForms) {
-                const megaResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${form.sprite}`);
-                if (megaResponse.ok) {
-                    const megaData = await megaResponse.json();
-                    const megaImage = document.createElement('div');
-                    megaImage.className = 'mega-image';
-                    
-                    megaImage.innerHTML = `
-                        <div class="image-container">
-                            <h4>${form.name}</h4>
-                            <img src="${megaData.sprites.other['official-artwork'].front_default}" 
-                                 alt="${form.name}" 
-                                 title="${form.name}">
-                            <div class="mega-types">
-                                ${megaData.types.map(type => `
-                                    <span class="type-badge ${type.type.name}">${type.type.name}</span>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                    megaContainer.appendChild(megaImage);
-                }
-            }
-
-            // Adicionar o container de mega evoluções ao modal
-            pokemonImages.appendChild(megaContainer);
-        } catch (error) {
-            console.error('Erro ao buscar mega evolução:', error);
-        }
-    }
 }
 
 // Função para inicializar a Pokédex
@@ -601,4 +743,5 @@ musicToggle.addEventListener('click', () => {
 });
 
 // Inicializar a Pokédex
+initPokedex(); 
 initPokedex(); 

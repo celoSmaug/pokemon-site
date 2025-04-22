@@ -269,6 +269,10 @@ footer {
     text-transform: uppercase;
     margin-left: 10px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1;
 }
 
 .mega-images {
@@ -276,20 +280,33 @@ footer {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 2px solid #e0e0e0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
 }
 
 .mega-images .image-container {
     background: linear-gradient(135deg, #f8f9fa, #e9ecef);
     border: 2px solid #ff4500;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mega-images .image-container:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(255, 69, 0, 0.2);
 }
 
 .mega-images .image-container h3 {
     color: #ff4500;
     font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 0.9rem;
 }
 
 .mega-images .image-container img {
     max-height: 250px;
+    object-fit: contain;
 }
 
 .filters {

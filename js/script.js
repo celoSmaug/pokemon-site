@@ -225,21 +225,35 @@ async function showPokemonDetails(pokemon) {
     // Buscar imagens da mega evolução se disponível
     if (hasMega) {
         try {
-            const megaResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}-mega`);
-            if (megaResponse.ok) {
-                const megaData = await megaResponse.json();
-                // Adicionar imagens da mega evolução
-                const megaImages = document.createElement('div');
-                megaImages.className = 'mega-images';
-                megaImages.innerHTML = `
-                    <div class="image-container">
-                        <h3>Mega Evolution</h3>
-                        <img src="${megaData.sprites.other['official-artwork'].front_default}" 
-                             alt="Mega ${pokemon.name}" 
-                             title="Mega ${pokemon.name}">
-                    </div>
-                `;
-                document.querySelector('.pokemon-images').appendChild(megaImages);
+            const megaForms = [];
+            if (hasMega.mega) {
+                megaForms.push(`${pokemon.name}-mega`);
+            }
+            if (hasMega.megaX) {
+                megaForms.push(`${pokemon.name}-mega-x`);
+            }
+            if (hasMega.megaY) {
+                megaForms.push(`${pokemon.name}-mega-y`);
+            }
+
+            for (const form of megaForms) {
+                const megaResponse = await fetch(`https://pokeapi.co/api/v2/pokemon/${form}`);
+                if (megaResponse.ok) {
+                    const megaData = await megaResponse.json();
+                    const megaImages = document.createElement('div');
+                    megaImages.className = 'mega-images';
+                    
+                    const formName = form.split('-').pop().toUpperCase();
+                    megaImages.innerHTML = `
+                        <div class="image-container">
+                            <h3>Mega Evolution ${formName}</h3>
+                            <img src="${megaData.sprites.other['official-artwork'].front_default}" 
+                                 alt="Mega ${pokemon.name} ${formName}" 
+                                 title="Mega ${pokemon.name} ${formName}">
+                        </div>
+                    `;
+                    document.querySelector('.pokemon-images').appendChild(megaImages);
+                }
             }
         } catch (error) {
             console.error('Erro ao buscar mega evolução:', error);

@@ -20,18 +20,21 @@
             </div>
         </nav>
         <div class="filters">
-            <select id="generation-filter">
-                <option value="all">Todas as Gerações</option>
-                <option value="1">1ª Geração (1-151)</option>
-                <option value="2">2ª Geração (152-251)</option>
-                <option value="3">3ª Geração (252-386)</option>
-                <option value="4">4ª Geração (387-493)</option>
-                <option value="5">5ª Geração (494-649)</option>
-                <option value="6">6ª Geração (650-721)</option>
-                <option value="7">7ª Geração (722-809)</option>
-                <option value="8">8ª Geração (810-905)</option>
-                <option value="9">9ª Geração (906-1025)</option>
-            </select>
+            <div class="filter-container">
+                <label for="generation-filter">Filtrar por Geração:</label>
+                <select id="generation-filter">
+                    <option value="all">Todas as Gerações</option>
+                    <option value="1">1ª Geração (1-151)</option>
+                    <option value="2">2ª Geração (152-251)</option>
+                    <option value="3">3ª Geração (252-386)</option>
+                    <option value="4">4ª Geração (387-493)</option>
+                    <option value="5">5ª Geração (494-649)</option>
+                    <option value="6">6ª Geração (650-721)</option>
+                    <option value="7">7ª Geração (722-809)</option>
+                    <option value="8">8ª Geração (810-905)</option>
+                    <option value="9">9ª Geração (906-1025)</option>
+                </select>
+            </div>
         </div>
     </header>
 
@@ -45,7 +48,25 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div class="pokemon-details">
-                <!-- Os detalhes do Pokémon serão carregados aqui -->
+                <div class="pokemon-images">
+                    <div class="image-container">
+                        <h3>Imagem Oficial</h3>
+                        <img id="pokemon-official" src="" alt="Pokémon oficial">
+                    </div>
+                    <div class="image-container">
+                        <h3>Versão Shiny</h3>
+                        <img id="pokemon-shiny" src="" alt="Pokémon shiny">
+                    </div>
+                    <div class="image-container">
+                        <h3>Carta TCG</h3>
+                        <img id="pokemon-card" src="" alt="Carta TCG">
+                    </div>
+                </div>
+                <div class="pokemon-info">
+                    <h2 id="pokemon-name"></h2>
+                    <div class="pokemon-types" id="pokemon-types"></div>
+                    <div class="pokemon-stats" id="pokemon-stats"></div>
+                </div>
             </div>
         </div>
     </div>
